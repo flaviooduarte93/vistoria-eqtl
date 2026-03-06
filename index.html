@@ -20,13 +20,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 /* HEADER */
 .app-header{
   background:linear-gradient(135deg,#0d1230 0%,#1a2a8f 60%,#e87722 100%);
-  padding:24px 32px;display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;display:flex;align-items:center;justify-content:space-between;
   box-shadow:0 4px 24px rgba(0,0,0,0.18);
+  min-height:56px;
 }
-.header-brand{display:flex;align-items:center;gap:16px}
-.header-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px}
-.header-sub{font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px}
-.header-badge{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:6px 14px;font-size:11px;color:white;letter-spacing:1px;text-transform:uppercase}
+.header-brand{display:flex;align-items:center;gap:16px;min-width:0}
+.header-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:white;letter-spacing:-0.5px;white-space:nowrap}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px;white-space:nowrap}
+.header-badge{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:6px 14px;font-size:11px;color:white;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
 
 /* MAIN */
 .main{max-width:780px;margin:0 auto;padding:32px 20px 80px}
@@ -59,20 +60,21 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .form-select{appearance:none;cursor:pointer}
 
 /* LOC GRID */
-.loc-rua{display:flex;flex-direction:column;gap:6px;} .loc-rua .auto-field{flex:1;} .loc-rua .form-input{width:100%;height:44px;padding-right:70px;}
 .loc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .loc-rua{grid-column:span 2}
+.loc-rua .form-input{width:100%;height:44px;padding-right:70px;}
 .loc-complemento{grid-column:span 1}
-.loc-bairro{grid-column:span 1}
-.loc-cep{grid-column:span 1}
-.loc-cidade{grid-column:span 1}
-.loc-lat{grid-column:span 1}
-.loc-lng{grid-column:span 1}
-.loc-dt{grid-column:span 1}
-@media(max-width:600px){
+.loc-bairro,.loc-cep,.loc-cidade,.loc-lat,.loc-lng,.loc-dt{grid-column:span 1}
+
+@media(max-width:700px){
   .loc-grid{grid-template-columns:1fr 1fr}
   .loc-rua{grid-column:span 2}
-  .loc-complemento,.loc-bairro,.loc-cep,.loc-cidade,.loc-lat,.loc-lng,.loc-dt{grid-column:span 1}
+  .loc-complemento,.loc-bairro,.loc-cep,.loc-cidade{grid-column:span 1}
+  .loc-lat,.loc-lng,.loc-dt{grid-column:span 1}
+}
+@media(max-width:480px){
+  .loc-grid{grid-template-columns:1fr}
+  .loc-rua,.loc-complemento,.loc-bairro,.loc-cep,.loc-cidade,.loc-lat,.loc-lng,.loc-dt{grid-column:span 1}
 }
 
 /* AUTO FIELD */
