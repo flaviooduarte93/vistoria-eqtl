@@ -491,7 +491,7 @@ async function capturarLocalizacao() {
 
       status.className = 'geo-status success';
       statusText.textContent = 'Localizacao capturada com sucesso!';
-      btn.textContent = '✓ Localizacao Capturada — Capturar novamente';
+      btn.textContent = 'Localizacao Capturada - Capturar novamente';
       btn.disabled = false;
       setTimeout(() => { status.className = 'geo-status'; }, 3000);
 
@@ -736,4 +736,14 @@ let temMedidor = true;
 
 function setMedidor(tem) {
   temMedidor = tem;
-  document.getElementById(
+  document.getElementById('btnTemMedidor').className = 'toggle-btn' + (tem ? ' active' : '');
+  document.getElementById('btnSemMedidor').className = 'toggle-btn' + (!tem ? ' active sem' : '');
+  document.getElementById('groupMedidor').className = 'form-group' + (tem ? '' : ' disabled');
+  if (!tem) document.getElementById('medidor').value = '';
+}
+
+// Init
+initPhotoSlots();
+</script>
+</body>
+</html>
