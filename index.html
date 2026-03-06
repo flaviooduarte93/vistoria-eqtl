@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vistoria de Instalacao - Equatorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6fb;--surface:#fff;--surface2:#f0f3fa;
+  --border:#dde3ee;--accent:#1a2a8f;--accent2:#0d1a6e;
+  --orange:#e87722;--text:#0d1230;--muted:#6b7a99;
+  --success:#00a651;--danger:#e53e3e;
+  --shadow:0 2px 16px rgba(0,0,0,0.07);--shadow-lg:0 8px 40px rgba(0,0,0,0.13);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* HEADER */
+.app-header{
+  background:linear-gradient(135deg,#0d1230 0%,#1a2a8f 60%,#e87722 100%);
+  padding:24px 32px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 24px rgba(0,0,0,0.18);
+}
+.header-brand{display:flex;align-items:center;gap:16px}
+.header-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px}
+.header-sub{font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px}
+.header-badge{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:6px 14px;font-size:11px;color:white;letter-spacing:1px;text-transform:uppercase}
+
+/* MAIN */
+.main{max-width:780px;margin:0 auto;padding:32px 20px 80px}
+
+/* SECTION */
+.section{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:28px;margin-bottom:20px;box-shadow:var(--shadow)}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.section-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--orange));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text)}
+.section-desc{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* FORM GRID */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.cols-1{grid-template-columns:1fr}
+.span-2{grid-column:span 2}
+.span-3{grid-column:span 3}
+
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)}
+.form-label .required{color:var(--orange)}
+.form-input,.form-textarea,.form-select{
+  padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:'Inter',sans-serif;font-size:14px;color:var(--text);
+  background:var(--surface2);outline:none;transition:all 0.2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--accent);background:white}
+.form-input[readonly]{background:#f8f9ff;color:var(--muted);cursor:default}
+.form-textarea{resize:vertical;min-height:90px;line-height:1.6}
+.form-select{appearance:none;cursor:pointer}
+
+/* LOC GRID */
+.loc-rua{display:flex;flex-direction:column;gap:6px;} .loc-rua .auto-field{flex:1;} .loc-rua .form-input{width:100%;height:44px;padding-right:70px;}
+.loc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.loc-rua{grid-column:span 2}
+.loc-complemento{grid-column:span 1}
+.loc-bairro{grid-column:span 1}
+.loc-cep{grid-column:span 1}
+.loc-cidade{grid-column:span 1}
+.loc-lat{grid-column:span 1}
+.loc-lng{grid-column:span 1}
+.loc-dt{grid-column:span 1}
+@media(max-width:600px){
+  .loc-grid{grid-template-columns:1fr 1fr}
+  .loc-rua{grid-column:span 2}
+  .loc-complemento,.loc-bairro,.loc-cep,.loc-cidade,.loc-lat,.loc-lng,.loc-dt{grid-column:span 1}
+}
+
+/* AUTO FIELD */
+.auto-field{position:relative}
+.auto-badge{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:rgba(0,166,81,0.1);color:var(--success);border-radius:100px;
+  font-size:10px;font-weight:600;padding:2px 8px;letter-spacing:0.5px;
+  pointer-events:none;
+}
+
+/* GEO BUTTON */
+.btn-geo{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:14px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--orange));
+  color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  border:none;cursor:pointer;transition:all 0.25s;
+  box-shadow:0 4px 20px rgba(26,42,143,0.25);letter-spacing:0.3px;
+  margin-bottom:20px;
+}
+.btn-geo:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,42,143,0.35)}
+.btn-geo:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn-geo .geo-icon{font-size:20px}
+
+/* GEO STATUS */
+.geo-status{
+  display:none;align-items:center;gap:10px;padding:12px 16px;
+  border-radius:10px;margin-bottom:16px;font-size:13px;
+}
+.geo-status.loading{display:flex;background:rgba(26,42,143,0.06);border:1px solid rgba(26,42,143,0.15);color:var(--accent)}
+.geo-status.success{display:flex;background:rgba(0,166,81,0.07);border:1px solid rgba(0,166,81,0.2);color:var(--success)}
+.geo-status.error{display:flex;background:rgba(229,62,62,0.07);border:1px solid rgba(229,62,62,0.2);color:var(--danger)}
+.geo-spinner{width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PHOTOS */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.photo-slot{
+  aspect-ratio:1;border-radius:10px;border:2px dashed var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;cursor:pointer;transition:all 0.2s;background:var(--surface2);
+  position:relative;overflow:hidden;
+}
+.photo-slot:hover{border-color:var(--accent);background:rgba(26,42,143,0.04)}
+.photo-slot .slot-icon{font-size:24px}
+.photo-slot .slot-label{font-size:11px;color:var(--muted);font-weight:500;text-align:center;padding:0 8px}
+.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px}
+.photo-slot .remove-btn{
+  position:absolute;top:6px;right:6px;width:22px;height:22px;
+  background:var(--danger);color:white;border:none;border-radius:50%;
+  font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;
+  font-weight:700;
+}
+.photo-slot:hover .remove-btn{display:flex}
+.photo-notice{
+  background:rgba(232,119,34,0.08);border:1px solid rgba(232,119,34,0.2);
+  border-radius:10px;padding:12px 16px;font-size:12px;color:#b35a10;
+  display:flex;align-items:flex-start;gap:10px;margin-top:12px;line-height:1.5;
+}
+
+/* TOGGLE GROUP */
+.toggle-group{display:flex;gap:0;background:var(--surface2);border-radius:10px;padding:4px;border:1.5px solid var(--border);width:fit-content}
+.toggle-btn{padding:9px 20px;border:none;background:transparent;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.2s}
+.toggle-btn.active{background:white;color:var(--accent);box-shadow:0 1px 6px rgba(0,0,0,0.1);font-weight:600}
+.toggle-btn.active.sem{color:var(--danger)}
+#groupMedidor{transition:opacity 0.2s}
+#groupMedidor.disabled{opacity:0.35;pointer-events:none}
+
+/* SUBMIT */
+.submit-section{text-align:center;padding:8px 0}
+.btn-submit{
+  display:inline-flex;align-items:center;gap:12px;padding:16px 40px;
+  background:linear-gradient(135deg,var(--accent),var(--orange));
+  color:white;border:none;border-radius:14px;font-family:'Syne',sans-serif;
+  font-size:16px;font-weight:700;cursor:pointer;transition:all 0.25s;
+  box-shadow:0 6px 24px rgba(26,42,143,0.3);
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(26,42,143,0.4)}
+.btn-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.submit-note{font-size:12px;color:var(--muted);margin-top:12px}
+
+/* LOADING OVERLAY */
+#sendingOverlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(13,18,48,0.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+#sendingOverlay.show{display:flex}
+.sending-box{
+  background:white;border-radius:20px;padding:40px 48px;
+  text-align:center;max-width:320px;width:100%;
+  box-shadow:0 24px 64px rgba(0,0,0,0.25);
+}
+.sending-box .s-icon{font-size:44px;margin-bottom:16px}
+.sending-box h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px}
+.sending-box p{font-size:13px;color:var(--muted)}
+.send-progress{height:4px;background:var(--border);border-radius:100px;margin-top:20px;overflow:hidden}
+.send-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--orange));border-radius:100px;transition:width 0.5s ease;width:0%}
+
+/* SUCCESS */
+#successScreen{display:none;text-align:center;padding:60px 24px}
+#successScreen .s-icon{font-size:56px;margin-bottom:20px}
+#successScreen h2{font-family:'Syne',sans-serif;font-size:28px;margin-bottom:10px}
+#successScreen p{color:var(--muted);font-size:14px;margin-bottom:28px}
+.btn-new{padding:12px 28px;background:var(--accent);color:white;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:white;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;transition:transform 0.3s;white-space:nowrap;box-shadow:var(--shadow-lg)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp 0.5s ease both}
+.section:nth-child(2){animation-delay:0.05s}
+.section:nth-child(3){animation-delay:0.1s}
+.section:nth-child(4){animation-delay:0.15s}
+.section:nth-child(5){animation-delay:0.2s}
+
+@media(max-width:600px){
+  .form-grid{grid-template-columns:1fr}
+  .form-grid.cols-3{grid-template-columns:1fr 1fr}
+  .span-2,.span-3{grid-column:span 1}
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+  .app-header{padding:16px 20px}
+  .main{padding:20px 14px 60px}
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="header-brand">
+    <div>
+      <div class="header-logo">equatorial</div>
+      <div class="header-sub">Sistema de Vistoria de Instalacao</div>
+    </div>
+  </div>
+  <div class="header-badge">Relatorio de Campo</div>
+</div>
+
+<div class="main" id="mainForm">
+
+  <!-- SECTION 1: LOCALIZACAO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📍</div>
+      <div>
+        <div class="section-title">Localizacao da Instalacao</div>
+        <div class="section-desc">Clique no botao para capturar automaticamente todos os dados de localizacao</div>
+      </div>
+    </div>
+
+    <button class="btn-geo" id="btnGeo" onclick="capturarLocalizacao()">
+      <span class="geo-icon">📡</span>
+      Capturar Localizacao Automaticamente
+    </button>
+
+    <div class="geo-status" id="geoStatus">
+      <div class="geo-spinner"></div>
+      <span id="geoStatusText">Obtendo localizacao...</span>
+    </div>
+
+    <div class="loc-grid">
+      <div class="form-group loc-rua">
+        <label class="form-label">Rua / Avenida</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="rua" readonly placeholder="Capturado automaticamente ao clicar no botao acima">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+      <div class="form-group loc-complemento">
+        <label class="form-label">Complemento</label>
+        <input type="text" class="form-input" id="complemento" placeholder="Apto, casa, bloco...">
+      </div>
+      <div class="form-group loc-bairro">
+        <label class="form-label">Bairro / Setor</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="bairro" readonly placeholder="Automatico">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+      <div class="form-group loc-cep">
+        <label class="form-label">CEP</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="cep" readonly placeholder="Automatico">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+      <div class="form-group loc-cidade">
+        <label class="form-label">Cidade / UF</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="cidade" readonly placeholder="Automatico">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+      <div class="form-group loc-lat">
+        <label class="form-label">Latitude</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="latitude" readonly placeholder="Automatico">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+      <div class="form-group loc-lng">
+        <label class="form-label">Longitude</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="longitude" readonly placeholder="Automatico">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+      <div class="form-group loc-dt">
+        <label class="form-label">Data / Hora</label>
+        <div class="auto-field">
+          <input type="text" class="form-input" id="dataHora" readonly placeholder="Automatico">
+          <span class="auto-badge">AUTO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: INSTALACAO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div>
+        <div class="section-title">Dados da Instalacao</div>
+        <div class="section-desc">Informacoes do medidor e unidade consumidora</div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="form-label">Situacao do Medidor <span class="required">*</span></label>
+      <div class="toggle-group">
+        <button type="button" class="toggle-btn active" id="btnTemMedidor" onclick="setMedidor(true)">Possui medidor</button>
+        <button type="button" class="toggle-btn" id="btnSemMedidor" onclick="setMedidor(false)">Sem medidor</button>
+      </div>
+    </div>
+    <div class="form-grid" id="gridInstalacao">
+      <div class="form-group" id="groupMedidor">
+        <label class="form-label">Numero do Medidor <span class="required">*</span></label>
+        <input type="text" class="form-input" id="medidor" placeholder="Ex: 12345678-9">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Numero da UC <span class="required">*</span></label>
+        <input type="text" class="form-input" id="uc" placeholder="Ex: 10035477618">
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: OBSERVACOES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📝</div>
+      <div>
+        <div class="section-title">Observacoes da Vistoria</div>
+        <div class="section-desc">Descreva as condicoes encontradas na instalacao</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observacoes</label>
+      <textarea class="form-textarea" id="observacoes" placeholder="Descreva o estado da instalacao, irregularidades encontradas, condicoes do medidor e quaisquer outras observacoes relevantes..." rows="5"></textarea>
+    </div>
+  </div>
+
+  <!-- SECTION 4: FOTOS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📸</div>
+      <div>
+        <div class="section-title">Registro Fotografico</div>
+        <div class="section-desc">Adicione ate 6 fotos da instalacao vistoriada</div>
+      </div>
+    </div>
+
+    <div class="photo-notice">
+      <span style="font-size:16px;flex-shrink:0">⚠️</span>
+      <span><strong>Atencao:</strong> Ao menos <strong>1 foto e obrigatoria</strong>. As fotos devem ser tiradas com o <strong>timestamp ativado</strong> na camera do dispositivo. A data e hora visiveis na imagem sao essenciais para validade do relatorio de vistoria.</span>
+    </div>
+
+    <div class="photo-grid" id="photoGrid">
+      <!-- slots injected by JS -->
+    </div>
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(this)">
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-section">
+    <button class="btn-submit" id="btnSubmit" onclick="gerarEEnviar()">
+      <span>📄</span>
+      Gerar PDF e Enviar Relatorio
+    </button>
+    <div class="submit-note">O relatorio sera gerado em PDF e enviado para flavio.duarte@equatorial.com.br</div>
+  </div>
+
+</div>
+
+<!-- SUCCESS -->
+<div class="main" id="successScreen" style="display:none">
+  <div style="text-align:center;padding:60px 24px">
+    <div style="font-size:56px;margin-bottom:20px">✅</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:28px;margin-bottom:10px;color:var(--text)">Relatorio Enviado!</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:28px">O PDF foi gerado e enviado com sucesso para<br><strong>flavio.duarte@equatorial.com.br</strong></p>
+    <button class="btn-new" onclick="novaVistoria()">Nova Vistoria</button>
+  </div>
+</div>
+
+<!-- SENDING OVERLAY -->
+<div id="sendingOverlay">
+  <div class="sending-box">
+    <div class="s-icon">📄</div>
+    <h3 id="sendingTitle">Gerando PDF...</h3>
+    <p id="sendingDesc">Compilando informacoes e fotos</p>
+    <div class="send-progress"><div class="send-progress-fill" id="sendProgressFill"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xlgpeokw';
+const EMAIL_DESTINO = 'flavio.duarte@equatorial.com.br';
+const MAX_PHOTOS = 6;
+
+let photos = []; // {file, dataUrl}
+let geoData = null;
+let currentPhotoSlot = null;
+
+// Init photo slots
+function initPhotoSlots() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot';
+    slot.dataset.index = i;
+    slot.innerHTML = `<span class="slot-icon">📷</span><span class="slot-label">Foto ${i+1}</span>`;
+    slot.onclick = () => {
+      currentPhotoSlot = i;
+      document.getElementById('photoInput').click();
+    };
+    grid.appendChild(slot);
+  }
+  photos = new Array(MAX_PHOTOS).fill(null);
+}
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    photos[currentPhotoSlot] = { file, dataUrl: e.target.result };
+    const slot = document.querySelector(`.photo-slot[data-index="${currentPhotoSlot}"]`);
+    slot.innerHTML = `
+      <img src="${e.target.result}" alt="Foto ${currentPhotoSlot+1}">
+      <button class="remove-btn" onclick="removePhoto(event,${currentPhotoSlot})">x</button>`;
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(e, idx) {
+  e.stopPropagation();
+  photos[idx] = null;
+  const slot = document.querySelector(`.photo-slot[data-index="${idx}"]`);
+  slot.innerHTML = `<span class="slot-icon">📷</span><span class="slot-label">Foto ${idx+1}</span>`;
+}
+
+// GEO
+async function capturarLocalizacao() {
+  const btn = document.getElementById('btnGeo');
+  const status = document.getElementById('geoStatus');
+  const statusText = document.getElementById('geoStatusText');
+
+  btn.disabled = true;
+  status.className = 'geo-status loading';
+  statusText.textContent = 'Obtendo coordenadas GPS...';
+
+  if (!navigator.geolocation) {
+    showGeoError('GPS nao disponivel neste dispositivo.');
+    btn.disabled = false;
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+
+    const now = new Date();
+    document.getElementById('dataHora').value = now.toLocaleString('pt-BR');
+
+    statusText.textContent = 'Buscando endereco...';
+
+    try {
+      // Reverse geocoding via Nominatim
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`, {
+        headers: { 'Accept-Language': 'pt-BR' }
+      });
+      const data = await res.json();
+      const addr = data.address || {};
+
+      const rua = [addr.road, addr.house_number].filter(Boolean).join(', ') || data.display_name?.split(',')[0] || '';
+      const bairro = addr.suburb || addr.neighbourhood || addr.district || addr.city_district || '';
+      const cep = (addr.postcode || '').replace('-','').replace(/(\d{5})(\d{3})/,'$1-$2');
+      const cidade = [addr.city || addr.town || addr.municipality, addr.state_code || addr.state].filter(Boolean).join(' / ');
+
+      document.getElementById('rua').value = rua;
+      document.getElementById('bairro').value = bairro;
+      document.getElementById('cep').value = cep;
+      document.getElementById('cidade').value = cidade;
+
+      geoData = { lat, lng, rua, bairro, cep, cidade, dataHora: now.toLocaleString('pt-BR') };
+
+      status.className = 'geo-status success';
+      statusText.textContent = 'Localizacao capturada com sucesso!';
+      btn.textContent = '✓ Localizacao Capturada — Capturar novamente';
+      btn.disabled = false;
+
+    } catch(e) {
+      document.getElementById('rua').value = 'Nao foi possivel obter o endereco';
+      geoData = { lat, lng, rua: '', bairro: '', cep: '', cidade: '', dataHora: now.toLocaleString('pt-BR') };
+      status.className = 'geo-status success';
+      statusText.textContent = 'GPS obtido (endereco indisponivel)';
+      btn.disabled = false;
+    }
+  }, () => {
+    showGeoError('Permissao de localizacao negada. Verifique as configuracoes do navegador.');
+    btn.disabled = false;
+  }, { enableHighAccuracy: true, timeout: 15000 });
+}
+
+function showGeoError(msg) {
+  const status = document.getElementById('geoStatus');
+  status.className = 'geo-status error';
+  document.getElementById('geoStatusText').textContent = msg;
+}
+
+// PDF + SEND
+async function gerarEEnviar() {
+  // Validate
+  if (!geoData) { showToast('Capture a localizacao primeiro!', 'error'); return; }
+  if (temMedidor && !document.getElementById('medidor').value.trim()) { showToast('Informe o numero do medidor!', 'error'); return; }
+  if (!document.getElementById('uc').value.trim()) { showToast('Informe o numero da UC!', 'error'); return; }
+  if (!photos.some(p => p !== null)) { showToast('Insira pelo menos uma foto!', 'error'); return; }
+
+  showOverlay('Gerando PDF...', 'Compilando informacoes', 20);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210; const margin = 20; const contentW = W - margin * 2;
+
+  // Header background
+  doc.setFillColor(26, 42, 143);
+  doc.rect(0, 0, W, 45, 'F');
+  doc.setFillColor(232, 119, 34);
+  doc.rect(0, 38, W, 7, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text('EQUATORIAL ENERGIA', margin, 18);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Relatorio de Vistoria de Instalacao', margin, 28);
+  doc.setFontSize(9);
+  doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, margin, 35);
+
+  let y = 56;
+
+  function sectionHeader(title, icon) {
+    doc.setFillColor(240, 243, 250);
+    doc.rect(margin, y - 5, contentW, 10, 'F');
+    doc.setDrawColor(221, 227, 238);
+    doc.rect(margin, y - 5, contentW, 10, 'S');
+    doc.setFillColor(26, 42, 143);
+    doc.rect(margin, y - 5, 3, 10, 'F');
+    doc.setTextColor(13, 18, 48);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(title, margin + 7, y + 1);
+    y += 12;
+  }
+
+  function row(label, value) {
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 122, 153);
+    doc.text(label.toUpperCase(), margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(13, 18, 48);
+    const lines = doc.splitTextToSize(value || '-', contentW - 50);
+    doc.text(lines, margin + 50, y);
+    y += lines.length * 5 + 4;
+  }
+
+  // LOCALIZACAO
+  sectionHeader('LOCALIZACAO DA INSTALACAO');
+  row('Endereco', document.getElementById('rua').value);
+  row('Complemento', document.getElementById('complemento').value);
+  row('Bairro / Setor', document.getElementById('bairro').value);
+  row('CEP', document.getElementById('cep').value);
+  row('Cidade / UF', document.getElementById('cidade').value);
+  row('Latitude', document.getElementById('latitude').value);
+  row('Longitude', document.getElementById('longitude').value);
+  row('Data / Hora', document.getElementById('dataHora').value);
+  y += 4;
+
+  // INSTALACAO
+  sectionHeader('DADOS DA INSTALACAO');
+  row('Situacao Medidor', temMedidor ? 'Possui medidor' : 'Sem medidor');
+  if (temMedidor) row('Num. Medidor', document.getElementById('medidor').value);
+  row('Num. UC', document.getElementById('uc').value);
+  y += 4;
+
+  // OBSERVACOES
+  const obs = document.getElementById('observacoes').value;
+  if (obs) {
+    sectionHeader('OBSERVACOES DA VISTORIA');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(13, 18, 48);
+    const obsLines = doc.splitTextToSize(obs, contentW);
+    obsLines.forEach(line => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.text(line, margin, y);
+      y += 6;
+    });
+    y += 4;
+  }
+
+  showOverlay('Inserindo fotos...', 'Processando imagens', 60);
+
+  // FOTOS
+  const photoList = photos.filter(p => p !== null);
+  if (photoList.length > 0) {
+    if (y > 220) { doc.addPage(); y = 20; }
+    sectionHeader('REGISTRO FOTOGRAFICO');
+
+    const imgW = (contentW - 8) / 2;
+    const imgH = 60;
+    let col = 0;
+    let rowStartY = y;
+
+    for (const photo of photoList) {
+      if (y > 270) { doc.addPage(); y = 20; rowStartY = y; col = 0; }
+      const x = margin + col * (imgW + 8);
+      try {
+        doc.addImage(photo.dataUrl, 'JPEG', x, rowStartY, imgW, imgH);
+      } catch(e) {}
+      col++;
+      if (col >= 2) { col = 0; rowStartY += imgH + 6; y = rowStartY; }
+    }
+    if (col > 0) y = rowStartY + imgH + 6;
+    y += 4;
+  }
+
+  // Footer on all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFillColor(240, 243, 250);
+    doc.rect(0, 285, W, 12, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 122, 153);
+    doc.text('Equatorial Energia — Relatorio de Vistoria de Instalacao', margin, 292);
+    doc.text(`Pagina ${i} de ${totalPages}`, W - margin, 292, { align: 'right' });
+  }
+
+  showOverlay('Enviando relatorio...', 'Transmitindo para ' + EMAIL_DESTINO, 85);
+
+  // Convert PDF to base64
+  const pdfBase64 = doc.output('datauristring');
+
+  // Send via Formspree
+  try {
+    const formData = new FormData();
+    formData.append('_subject', `Relatorio de Vistoria - ${document.getElementById('rua').value || 'Sem endereco'} - ${new Date().toLocaleString('pt-BR')}`);
+    formData.append('Email_Destino', EMAIL_DESTINO);
+    formData.append('Endereco', document.getElementById('rua').value);
+    formData.append('Complemento', document.getElementById('complemento').value);
+    formData.append('Bairro', document.getElementById('bairro').value);
+    formData.append('CEP', document.getElementById('cep').value);
+    formData.append('Cidade', document.getElementById('cidade').value);
+    formData.append('Latitude', document.getElementById('latitude').value);
+    formData.append('Longitude', document.getElementById('longitude').value);
+    formData.append('Data_Hora', document.getElementById('dataHora').value);
+    formData.append('Situacao_Medidor', temMedidor ? 'Possui medidor' : 'Sem medidor');
+    formData.append('Medidor', temMedidor ? document.getElementById('medidor').value : 'Sem medidor');
+    formData.append('UC', document.getElementById('uc').value);
+    formData.append('Observacoes', document.getElementById('observacoes').value || 'Nenhuma');
+
+    // Attach PDF
+    const pdfBlob = doc.output('blob');
+    formData.append('Relatorio_PDF', pdfBlob, `vistoria_${Date.now()}.pdf`);
+
+    // Attach photos
+    photoList.forEach((p, i) => {
+      if (p) formData.append(`Foto_${i+1}`, p.file, `foto_${i+1}.jpg`);
+    });
+
+    const res = await fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.ok) {
+      setProgress(100);
+      setTimeout(() => {
+        hideOverlay();
+        document.getElementById('mainForm').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+        // Also trigger PDF download
+        doc.save(`vistoria_${new Date().toISOString().slice(0,10)}.pdf`);
+      }, 600);
+    } else {
+      throw new Error('Erro no envio');
+    }
+  } catch(e) {
+    hideOverlay();
+    showToast('Erro ao enviar. Verifique sua conexao.', 'error');
+    document.getElementById('btnSubmit').disabled = false;
+  }
+}
+
+function novaVistoria() {
+  document.getElementById('mainForm').style.display = 'block';
+  document.getElementById('successScreen').style.display = 'none';
+  document.querySelectorAll('input:not([readonly]),textarea').forEach(el => el.value = '');
+  document.querySelectorAll('input[readonly]').forEach(el => el.value = '');
+  document.getElementById('geoStatus').className = 'geo-status';
+  document.getElementById('btnGeo').disabled = false;
+  document.getElementById('btnGeo').innerHTML = '<span class="geo-icon">📡</span>Capturar Localizacao Automaticamente';
+  geoData = null;
+  initPhotoSlots();
+}
+
+function showOverlay(title, desc, progress) {
+  document.getElementById('sendingTitle').textContent = title;
+  document.getElementById('sendingDesc').textContent = desc;
+  setProgress(progress);
+  document.getElementById('sendingOverlay').classList.add('show');
+}
+function setProgress(val) {
+  document.getElementById('sendProgressFill').style.width = val + '%';
+}
+function hideOverlay() {
+  document.getElementById('sendingOverlay').classList.remove('show');
+}
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// Medidor toggle
+let temMedidor = true;
+
+function setMedidor(tem) {
+  temMedidor = tem;
+  document.getElementById('btnTemMedidor').className = 'toggle-btn' + (tem ? ' active' : '');
+  document.getElementById('btnSemMedidor').className = 'toggle-btn' + (!tem ? ' active sem' : '');
+  document.getElementById('groupMedidor').className = 'form-group' + (tem ? '' : ' disabled');
+  if (!tem) document.getElementById('medidor').value = '';
+}
+
+// Init
+initPhotoSlots();
+</script>
+</body>
+</html>
