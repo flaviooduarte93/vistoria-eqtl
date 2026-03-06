@@ -362,9 +362,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="submit-section">
     <button class="btn-submit" id="btnSubmit" onclick="gerarEEnviar()">
       <span>📄</span>
-      Gerar PDF e Enviar Relatorio
+      Gerar e Salvar Relatorio em PDF
     </button>
-    <div class="submit-note">O relatorio sera gerado em PDF e enviado para flavio.duarte@equatorial.com.br</div>
+    <div class="submit-note">O relatorio sera gerado em PDF e enviado para <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fe98929f889791d09a8b9f8c8a9bbe9b8f8b9f8a918c979f92d09d9193d09c8c">[email&#160;protected]</a></div>
   </div>
 
 </div>
@@ -373,8 +373,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <div class="main" id="successScreen" style="display:none">
   <div style="text-align:center;padding:60px 24px">
     <div style="font-size:56px;margin-bottom:20px">✅</div>
-    <h2 style="font-family:'Syne',sans-serif;font-size:28px;margin-bottom:10px;color:var(--text)">Relatorio Enviado!</h2>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:28px">O PDF foi gerado e enviado com sucesso para<br><strong>flavio.duarte@equatorial.com.br</strong></p>
+    <h2 style="font-family:'Syne',sans-serif;font-size:28px;margin-bottom:10px;color:var(--text)">Relatorio Salvo!</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:28px">O PDF foi gerado e enviado com sucesso para<br><strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9afcf6fbecf3f5b4feeffbe8eeffdaffebeffbeef5e8f3fbf6b4f9f5f7b4f8e8">[email&#160;protected]</a></strong></p>
     <button class="btn-new" onclick="novaVistoria()">Nova Vistoria</button>
   </div>
 </div>
@@ -391,8 +391,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 <div class="toast" id="toast"></div>
 
-<script>
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xlgpeokw';
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const EMAIL_DESTINO = 'flavio.duarte@equatorial.com.br';
 const MAX_PHOTOS = 6;
 
@@ -492,6 +491,7 @@ async function capturarLocalizacao() {
       statusText.textContent = 'Localizacao capturada com sucesso!';
       btn.textContent = '✓ Localizacao Capturada — Capturar novamente';
       btn.disabled = false;
+      setTimeout(() => { status.className = 'geo-status'; }, 3000);
 
     } catch(e) {
       document.getElementById('rua').value = 'Nao foi possivel obter o endereco';
@@ -499,6 +499,7 @@ async function capturarLocalizacao() {
       status.className = 'geo-status success';
       statusText.textContent = 'GPS obtido (endereco indisponivel)';
       btn.disabled = false;
+      setTimeout(() => { status.className = 'geo-status'; }, 3000);
     }
   }, () => {
     showGeoError('Permissao de localizacao negada. Verifique as configuracoes do navegador.');
@@ -653,44 +654,39 @@ async function gerarEEnviar() {
 
   // Send via Formspree
   try {
-    const formData = new FormData();
-    formData.append('_subject', `Relatorio de Vistoria - ${document.getElementById('rua').value || 'Sem endereco'} - ${new Date().toLocaleString('pt-BR')}`);
-    formData.append('Email_Destino', EMAIL_DESTINO);
-    formData.append('Endereco', document.getElementById('rua').value);
-    formData.append('Complemento', document.getElementById('complemento').value);
-    formData.append('Bairro', document.getElementById('bairro').value);
-    formData.append('CEP', document.getElementById('cep').value);
-    formData.append('Cidade', document.getElementById('cidade').value);
-    formData.append('Latitude', document.getElementById('latitude').value);
-    formData.append('Longitude', document.getElementById('longitude').value);
-    formData.append('Data_Hora', document.getElementById('dataHora').value);
-    formData.append('Situacao_Medidor', temMedidor ? 'Possui medidor' : 'Sem medidor');
-    formData.append('Medidor', temMedidor ? document.getElementById('medidor').value : 'Sem medidor');
-    formData.append('UC', document.getElementById('uc').value);
-    formData.append('Observacoes', document.getElementById('observacoes').value || 'Nenhuma');
+    // Convert PDF to base64 string for attachment
+    const pdfBase64 = doc.output('datauristring'); // data:application/pdf;base64,...
 
-    // Attach PDF
-    const pdfBlob = doc.output('blob');
-    formData.append('Relatorio_PDF', pdfBlob, `vistoria_${Date.now()}.pdf`);
+    // Init EmailJS
+    emailjs.init(EMAILJS_PUBLIC_KEY);
 
-    // Attach photos
-    photoList.forEach((p, i) => {
-      if (p) formData.append(`Foto_${i+1}`, p.file, `foto_${i+1}.jpg`);
-    });
+    const templateParams = {
+      to_email:        EMAIL_DESTINO,
+      subject:         `Relatorio de Vistoria - ${document.getElementById('rua').value || 'Sem endereco'} - ${new Date().toLocaleString('pt-BR')}`,
+      endereco:        document.getElementById('rua').value || '-',
+      complemento:     document.getElementById('complemento').value || '-',
+      bairro:          document.getElementById('bairro').value || '-',
+      cep:             document.getElementById('cep').value || '-',
+      cidade:          document.getElementById('cidade').value || '-',
+      latitude:        document.getElementById('latitude').value || '-',
+      longitude:       document.getElementById('longitude').value || '-',
+      data_hora:       document.getElementById('dataHora').value || '-',
+      situacao_medidor:temMedidor ? 'Possui medidor' : 'Sem medidor',
+      medidor:         temMedidor ? document.getElementById('medidor').value : 'Sem medidor',
+      uc:              document.getElementById('uc').value || '-',
+      observacoes:     document.getElementById('observacoes').value || 'Nenhuma',
+      fotos_count:     photoList.length + ' foto(s) registrada(s)',
+      pdf_attachment:  pdfBase64,
+    };
 
-    const res = await fetch(FORMSPREE_ENDPOINT, {
-      method: 'POST',
-      body: formData,
-      headers: { 'Accept': 'application/json' }
-    });
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 
-    if (res.ok) {
+    if (result.status === 200) {
       setProgress(100);
       setTimeout(() => {
         hideOverlay();
         document.getElementById('mainForm').style.display = 'none';
         document.getElementById('successScreen').style.display = 'block';
-        // Also trigger PDF download
         doc.save(`vistoria_${new Date().toISOString().slice(0,10)}.pdf`);
       }, 600);
     } else {
@@ -738,14 +734,4 @@ let temMedidor = true;
 
 function setMedidor(tem) {
   temMedidor = tem;
-  document.getElementById('btnTemMedidor').className = 'toggle-btn' + (tem ? ' active' : '');
-  document.getElementById('btnSemMedidor').className = 'toggle-btn' + (!tem ? ' active sem' : '');
-  document.getElementById('groupMedidor').className = 'form-group' + (tem ? '' : ' disabled');
-  if (!tem) document.getElementById('medidor').value = '';
-}
-
-// Init
-initPhotoSlots();
-</script>
-</body>
-</html>
+  document.getElementById(
