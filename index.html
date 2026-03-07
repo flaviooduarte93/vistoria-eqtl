@@ -651,11 +651,12 @@ async function gerarEEnviar() {
 
   // Salvar PDF no dispositivo
   setProgress(100);
+  const _uc = document.getElementById('uc').value.trim().replace(/[^a-zA-Z0-9]/g, '') || 'semUC';
+  const _dt = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const _filename = 'vistoria_' + _dt + '_UC' + _uc + '.pdf';
   setTimeout(() => {
     hideOverlay();
-    const uc = document.getElementById('uc').value.trim().replace(/\s+/g, '_') || 'sem-uc';
-    const data = new Date().toISOString().slice(0,10);
-    doc.save(`vistoria_${data}_UC${uc}.pdf`);
+    doc.save(_filename);
     document.getElementById('mainForm').style.display = 'none';
     document.getElementById('successScreen').style.display = 'block';
   }, 400);
