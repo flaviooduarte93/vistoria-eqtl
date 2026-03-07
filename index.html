@@ -653,7 +653,9 @@ async function gerarEEnviar() {
   setProgress(100);
   setTimeout(() => {
     hideOverlay();
-    doc.save(`vistoria_${new Date().toISOString().slice(0,10)}.pdf`);
+    const uc = document.getElementById('uc').value.trim().replace(/\s+/g, '_') || 'sem-uc';
+    const data = new Date().toISOString().slice(0,10);
+    doc.save(`vistoria_${data}_UC${uc}.pdf`);
     document.getElementById('mainForm').style.display = 'none';
     document.getElementById('successScreen').style.display = 'block';
   }, 400);
