@@ -649,56 +649,14 @@ async function gerarEEnviar() {
     doc.text(`Pagina ${i} de ${totalPages}`, W - margin, 292, { align: 'right' });
   }
 
-  showOverlay('Enviando relatorio...', 'Transmitindo para ' + EMAIL_DESTINO, 85);
-
-  // Convert PDF to base64
-  const pdfBase64 = doc.output('datauristring');
-
-  // Send via Formspree
-  try {
-    // Convert PDF to base64 string for attachment
-    const pdfBase64 = doc.output('datauristring'); // data:application/pdf;base64,...
-
-    // Init EmailJS
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-
-    const templateParams = {
-      to_email:        EMAIL_DESTINO,
-      subject:         `Relatorio de Vistoria - ${document.getElementById('rua').value || 'Sem endereco'} - ${new Date().toLocaleString('pt-BR')}`,
-      endereco:        document.getElementById('rua').value || '-',
-      complemento:     document.getElementById('complemento').value || '-',
-      bairro:          document.getElementById('bairro').value || '-',
-      cep:             document.getElementById('cep').value || '-',
-      cidade:          document.getElementById('cidade').value || '-',
-      latitude:        document.getElementById('latitude').value || '-',
-      longitude:       document.getElementById('longitude').value || '-',
-      data_hora:       document.getElementById('dataHora').value || '-',
-      situacao_medidor:temMedidor ? 'Possui medidor' : 'Sem medidor',
-      medidor:         temMedidor ? document.getElementById('medidor').value : 'Sem medidor',
-      uc:              document.getElementById('uc').value || '-',
-      observacoes:     document.getElementById('observacoes').value || 'Nenhuma',
-      fotos_count:     photoList.length + ' foto(s) registrada(s)',
-      pdf_attachment:  pdfBase64,
-    };
-
-    const result = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-
-    if (result.status === 200) {
-      setProgress(100);
-      setTimeout(() => {
-        hideOverlay();
-        document.getElementById('mainForm').style.display = 'none';
-        document.getElementById('successScreen').style.display = 'block';
-        doc.save(`vistoria_${new Date().toISOString().slice(0,10)}.pdf`);
-      }, 600);
-    } else {
-      throw new Error('Erro no envio');
-    }
-  } catch(e) {
+  // Salvar PDF no dispositivo
+  setProgress(100);
+  setTimeout(() => {
     hideOverlay();
-    showToast('Erro ao enviar. Verifique sua conexao.', 'error');
-    document.getElementById('btnSubmit').disabled = false;
-  }
+    doc.save(`vistoria_${new Date().toISOString().slice(0,10)}.pdf`);
+    document.getElementById('mainForm').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+  }, 400);
 }
 
 function novaVistoria() {
